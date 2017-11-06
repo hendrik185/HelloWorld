@@ -1,0 +1,74 @@
+apply plugin: "java"
+apply plugin: "checkstyle"
+apply plugin: 'findbugs'
+apply plugin: "jacoco"
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile group: 'junit', name: 'junit', version: '4.12'
+}
+
+checkstyle {
+       configFile = new File(rootDir, "checkstyle/checkstyle.xml")
+	   toolVersion = "7.4"
+ }
+ 
+sourceSets {
+	main.java.srcDirs = ['src/main']
+	
+	test {
+        java {
+            srcDirs = ['src/test']  
+        }
+    }
+}
+
+test { 
+	finalizedBy jacocoTestReport 
+}
+
+jacoco {
+    toolVersion = "0.7.6.201602180812"
+    reportsDir = file("$buildDir/customJacocoReportDir")
+}
+
+
+findbugs {
+	toolVersion = "3.0.1"
+    sourceSets = [sourceSets.main]
+    ignoreFailures = true
+    reportsDir = file("$project.buildDir/findbugsReports")
+    effort = "max"
+    reportLevel = "high"
+    visitors = ["FindSqlInjection", "SwitchFallthrough"]
+    omitVisitors = ["FindNonShortCircuit"]
+}
+
+tasks.withType(FindBugs) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+}
+
+jacocoTestReport{
+    additionalSourceDirs = files(sourceSets.main.allJava.srcDirs)
+    reports {
+        xml.enabled = false
+        csv.enabled = false
+        reports.html.destination = file("${buildDir}/reports/jacoco/html")
+    }
+    executionData = files('build/jacoco/test.exec')
+}
+
+
+
+
+
+
+
+
+
